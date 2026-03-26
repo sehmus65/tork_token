@@ -3,42 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tork Token Pro</title>
+    <title>Tork Pro Dashboard</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: radial-gradient(circle, #1a1a1a 0%, #000 100%); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; margin: 0; overflow: hidden; user-select: none; }
-        .header { width: 90%; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-        .wallet-btn { background: #0088cc; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 0 15px rgba(0,136,204,0.4); }
-        #balance-container { text-align: center; margin-top: 20px; }
-        #balance { font-size: 48px; font-weight: 800; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
-        #tork-gear { width: 280px; height: 280px; cursor: pointer; transition: transform 0.05s ease-out; filter: drop-shadow(0 0 25px rgba(255,255,255,0.15)); z-index: 2; }
-        #tork-gear:active { transform: scale(0.92); }
-        .stats { width: 90%; margin-bottom: 30px; }
-        .energy-box { width: 100%; height: 15px; background: #222; border-radius: 10px; border: 1px solid #333; overflow: hidden; }
-        #energy-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #fff, #aaa); transition: width 0.2s; }
-        .footer-text { font-size: 14px; color: #888; margin-top: 5px; text-align: center; }
-        .particle { position: absolute; color: #fff; pointer-events: none; font-weight: bold; animation: fly 0.8s ease-out forwards; }
-        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
+        
+        /* HOŞGELDİNİZ EKRANI */
+        #welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; }
+        #welcome-screen img { width: 120px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)); }
+        #welcome-screen h1 { font-size: 32px; margin: 10px 0; background: linear-gradient(90deg, #fff, #888); -webkit-background-clip: text; color: transparent; }
+        #welcome-screen button { background: #fff; color: #000; border: none; padding: 15px 50px; border-radius: 30px; font-weight: bold; font-size: 16px; margin-top: 30px; }
+
+        /* ANA DASHBOARD (Şimdilik Gizli) */
+        #dashboard { display: none; flex-direction: column; height: 100%; padding: 15px; box-sizing: border-box; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header img { width: 30px; }
+        .wallet-btn { background: #222; border: 1px solid #333; padding: 8px 15px; border-radius: 20px; font-size: 12px; }
+
+        /* Bakiye Kartı */
+        .balance-card { background: linear-gradient(135deg, #111 0%, #000 100%); border: 1px solid #222; border-radius: 15px; padding: 20px; text-align: center; }
+        .balance-title { color: #888; font-size: 14px; letter-spacing: 1px; }
+        .balance-amount { font-size: 40px; font-weight: 800; }
+        .withdraw-btn { display: inline-block; background: #fff; color: #000; border-radius: 15px; padding: 5px 15px; margin-top: 10px; font-size: 12px; font-weight: bold; }
+
+        /* Görevler / Kontrol Listesi */
+        .section-title { font-size: 18px; margin: 25px 0 10px; color: #aaa; }
+        .task-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .task-item { background: #111; border: 1px solid #222; border-radius: 10px; padding: 15px; position: relative; }
+        .task-item.active { border-color: #0088cc; box-shadow: 0 0 10px rgba(0,136,204,0.3); }
+        .task-title { font-size: 14px; font-weight: bold; }
+        .task-desc { font-size: 11px; color: #888; margin-top: 2px; }
+        .task-points { position: absolute; top: 10px; right: 10px; font-size: 12px; color: #0088cc; font-weight: bold; }
+
+        /* Alt Menü (Simülasyon) */
+        .alt-menu { display: flex; justify-content: space-around; background: #111; border-top: 1px solid #222; position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px 0; }
+        .menu-item { color: #888; text-align: center; font-size: 10px; }
+        .menu-item.active { color: #fff; font-weight: bold; }
+        
+        /* Dişli Animasyonu (Eski koddan miras) */
+        #gear-icon { width: 40px; height: 40px; filter: invert(1); cursor: pointer; transition: transform 0.1s; }
+        #gear-icon:active { transform: scale(0.9); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div style="font-weight: bold; color: #aaa;">TORK PRO v1.0</div>
-        <button class="wallet-btn" onclick="connectWallet()">CONNECT WALLET</button>
+
+    <div id="welcome-screen">
+        <img src="https://cdn-icons-png.flaticon.com/512/503/503921.png">
+        <h1>TORK PRO</h1>
+        <p style="color: #aaa; padding: 0 30px;">The Next Generation Mining <br> Platform in Telegram.</p>
+        <button onclick="startApp()">Hemen Başla ↗️</button>
     </div>
 
-    <div id="balance-container">
-        <div style="color: #888; letter-spacing: 2px;">TOTAL BALANCE</div>
-        <div id="balance">💎 <span id="pts">0.00</span></div>
-    </div>
+    <div id="dashboard">
+        <div class="header">
+            <img src="https://cdn-icons-png.flaticon.com/512/503/503921.png">
+            <button class="wallet-btn" onclick="alert(' TON Cüzdan yakında!')">TON Bağla 🔗</button>
+        </div>
 
-    <img id="tork-gear" src="https://cdn-icons-png.flaticon.com/512/503/503921.png" onclick="mine(event)">
+        <div class="balance-card">
+            <div class="balance-title">TOTAL TORK BALANCE</div>
+            <div class="balance-amount">💎 <span id="balance">125.75</span></div>
+            <div class="withdraw-btn">Withdraw (Yakında) ↗️</div>
+        </div>
 
-    <div class="stats">
-        <div class="energy-box"><div id="energy-bar"></div></div>
-        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-            <span>⚡ Energy: %<span id="energy-text">100</span></span>
-            <span style="color: #0088cc;" onclick="alert('Withdraw coming soon!')">WITHDRAW ↗️</span>
+        <div class="section-title">DAILY EARNINGS</div>
+        <div class="task-list">
+            <div class="task-item active">
+                <div class="task-title">Daily Mining</div>
+                <div class="task-desc">Tıkla ve TRK topla.</div>
+                <img id="gear-icon" src="https://cdn-icons-png.flaticon.com/512/503/503921.png" style="margin-top: 10px;" onclick="mineTork()">
+            </div>
+            <div class="task-item">
+                <div class="task-title">Daily Quest</div>
+                <div class="task-desc">Günün görevini tamamla.</div>
+                <div class="task-points">+50</div>
+            </div>
+        </div>
+
+        <div class="section-title">ACTIVE BONUSES</div>
+        <div style="background: #111; padding: 15px; border-radius: 10px; font-size: 14px; display: flex; justify-content: space-between;">
+            <span>Friends (Simülasyon)</span>
+            <span style="color: #888;">5 / 100 +1.2 TRK/s</span>
+        </div>
+
+        <div class="alt-menu">
+            <div class="menu-item active">Home</div>
+            <div class="menu-item">Tasks</div>
+            <div class="menu-item">Friends</div>
+            <div class="menu-item">Profile</div>
         </div>
     </div>
 
@@ -46,61 +100,22 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
         
-        // Verileri hafızadan yükle
-        let pts = parseFloat(localStorage.getItem('tork_pts')) || 0;
-        let energy = 100;
-        
-        document.getElementById('pts').innerText = pts.toFixed(2);
-        document.getElementById('energy-bar').style.width = energy + "%";
+        let currentBalance = 125.75;
+        let rotation = 0;
 
-        function mine(e) {
-            if (energy > 0) {
-                pts = (parseFloat(pts) + 0.1).toFixed(2);
-                energy -= 1;
-                
-                // Güncelleme
-                document.getElementById('pts').innerText = pts;
-                document.getElementById('energy-bar').style.width = energy + "%";
-                document.getElementById('energy-text').innerText = energy;
-                document.getElementById('tork-gear').style.transform = `rotate(${pts * 50}deg)`;
-                
-                // Veriyi kaydet
-                localStorage.setItem('tork_pts', pts);
-
-                // Animasyon parçacığı
-                createParticle(e.clientX, e.clientY);
-                tg.HapticFeedback.impactOccurred('medium');
-            } else {
-                tg.showPopup({title: "Energy Low", message: "Rest to mine more TORK!"});
-            }
+        function startApp() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'flex';
+            tg.HapticFeedback.notificationOccurred('success');
         }
 
-        function createParticle(x, y) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = x + 'px';
-            p.style.top = y + 'px';
-            p.innerText = '+0.1';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 800);
+        function mineTork() {
+            currentBalance += 0.05;
+            rotation += 45;
+            document.getElementById('balance').innerText = currentBalance.toFixed(2);
+            document.getElementById('gear-icon').style.transform = `rotate(${rotation}deg)`;
+            tg.HapticFeedback.impactOccurred('medium');
         }
-
-        function connectWallet() {
-            tg.showPopup({
-                title: 'Wallet Connection',
-                message: 'TON Wallet connection will be available after the Smart Contract launch.',
-                buttons: [{type: 'close'}]
-            });
-        }
-
-        // Enerji yenileme
-        setInterval(() => {
-            if (energy < 100) {
-                energy += 1;
-                document.getElementById('energy-bar').style.width = energy + "%";
-                document.getElementById('energy-text').innerText = energy;
-            }
-        }, 3000);
     </script>
 </body>
 </html>
