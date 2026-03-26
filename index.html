@@ -3,40 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tork Token App</title>
+    <title>Tork Token Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; user-select: none; }
-        #balance { font-size: 36px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 10px #fff; }
-        #tork-gear { width: 250px; height: 250px; cursor: pointer; transition: transform 0.1s; filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4)); }
-        #tork-gear:active { transform: scale(0.95); }
-        .energy-box { width: 80%; height: 12px; background: #222; border-radius: 10px; margin-top: 30px; border: 1px solid #444; }
-        #energy-bar { width: 100%; height: 100%; background: #fff; border-radius: 10px; transition: width 0.3s; }
+        body { background: radial-gradient(circle, #1a1a1a 0%, #000 100%); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; margin: 0; overflow: hidden; user-select: none; }
+        .header { width: 90%; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .wallet-btn { background: #0088cc; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 0 15px rgba(0,136,204,0.4); }
+        #balance-container { text-align: center; margin-top: 20px; }
+        #balance { font-size: 48px; font-weight: 800; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        #tork-gear { width: 280px; height: 280px; cursor: pointer; transition: transform 0.05s ease-out; filter: drop-shadow(0 0 25px rgba(255,255,255,0.15)); z-index: 2; }
+        #tork-gear:active { transform: scale(0.92); }
+        .stats { width: 90%; margin-bottom: 30px; }
+        .energy-box { width: 100%; height: 15px; background: #222; border-radius: 10px; border: 1px solid #333; overflow: hidden; }
+        #energy-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #fff, #aaa); transition: width 0.2s; }
+        .footer-text { font-size: 14px; color: #888; margin-top: 5px; text-align: center; }
+        .particle { position: absolute; color: #fff; pointer-events: none; font-weight: bold; animation: fly 0.8s ease-out forwards; }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
     </style>
 </head>
 <body>
-    <div id="balance">💎 <span id="pts">0.00</span> TRK</div>
-    <img id="tork-gear" src="https://cdn-icons-png.flaticon.com/512/503/503921.png" onclick="mine()">
-    <div class="energy-box"><div id="energy-bar"></div></div>
-    <p>⚡ Energy: %<span id="energy-text">100</span></p>
+    <div class="header">
+        <div style="font-weight: bold; color: #aaa;">TORK PRO v1.0</div>
+        <button class="wallet-btn" onclick="connectWallet()">CONNECT WALLET</button>
+    </div>
+
+    <div id="balance-container">
+        <div style="color: #888; letter-spacing: 2px;">TOTAL BALANCE</div>
+        <div id="balance">💎 <span id="pts">0.00</span></div>
+    </div>
+
+    <img id="tork-gear" src="https://cdn-icons-png.flaticon.com/512/503/503921.png" onclick="mine(event)">
+
+    <div class="stats">
+        <div class="energy-box"><div id="energy-bar"></div></div>
+        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+            <span>⚡ Energy: %<span id="energy-text">100</span></span>
+            <span style="color: #0088cc;" onclick="alert('Withdraw coming soon!')">WITHDRAW ↗️</span>
+        </div>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        let pts = 0; let energy = 100;
-        function mine() {
+        
+        // Verileri hafızadan yükle
+        let pts = parseFloat(localStorage.getItem('tork_pts')) || 0;
+        let energy = 100;
+        
+        document.getElementById('pts').innerText = pts.toFixed(2);
+        document.getElementById('energy-bar').style.width = energy + "%";
+
+        function mine(e) {
             if (energy > 0) {
                 pts = (parseFloat(pts) + 0.1).toFixed(2);
                 energy -= 1;
+                
+                // Güncelleme
                 document.getElementById('pts').innerText = pts;
                 document.getElementById('energy-bar').style.width = energy + "%";
                 document.getElementById('energy-text').innerText = energy;
-                document.getElementById('tork-gear').style.transform = `rotate(${pts * 300}deg)`;
+                document.getElementById('tork-gear').style.transform = `rotate(${pts * 50}deg)`;
+                
+                // Veriyi kaydet
+                localStorage.setItem('tork_pts', pts);
+
+                // Animasyon parçacığı
+                createParticle(e.clientX, e.clientY);
                 tg.HapticFeedback.impactOccurred('medium');
             } else {
-                tg.showAlert("⚠️ Energy depleted! Rest a bit.");
+                tg.showPopup({title: "Energy Low", message: "Rest to mine more TORK!"});
             }
         }
+
+        function createParticle(x, y) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            p.innerText = '+0.1';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 800);
+        }
+
+        function connectWallet() {
+            tg.showPopup({
+                title: 'Wallet Connection',
+                message: 'TON Wallet connection will be available after the Smart Contract launch.',
+                buttons: [{type: 'close'}]
+            });
+        }
+
+        // Enerji yenileme
+        setInterval(() => {
+            if (energy < 100) {
+                energy += 1;
+                document.getElementById('energy-bar').style.width = energy + "%";
+                document.getElementById('energy-text').innerText = energy;
+            }
+        }, 3000);
     </script>
 </body>
 </html>
